@@ -38,8 +38,8 @@ const Footer: FC = () => {
           </div>
         </div>
 
-        {footerSections.map((section, idx) => (
-          <FooterSection key={idx} {...section} />
+        {footerSections.map((section) => (
+          <FooterSection key={section.title} {...section} />
         ))}
       </div>
     </footer>

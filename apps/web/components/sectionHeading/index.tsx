@@ -13,7 +13,6 @@ const SectionHeading: FC<Props> = ({ badgeStyle, badgeText, heading }) => {
     <div className={styles.section__heading}>
       <div className={styles.badge__container}>
         <div className={cn(styles.badge, badgeStyle)}></div>
-        {/*  */}
         <span className={styles.badge__text}> {badgeText} </span>
       </div>
 

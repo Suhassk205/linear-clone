@@ -84,7 +84,7 @@ const Header: FC = () => {
               </li>
 
               <li className={cn(styles.header__item, styles.header__button, styles.header__menu)}>
-                <button>
+                <button type="button" aria-label="Open menu">
                   <Menu />
                 </button>
               </li>
