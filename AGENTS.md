@@ -69,7 +69,7 @@ linear-clone/
 │   ├── ui/                 # Shared UI components
 │   │   └── package.json
 │   │
-│   └── config/             # Shared configs (Biome, TypeScript, etc.)
+│   └── typescript-config/  # Shared TypeScript configs
 │       └── package.json
 │
 ├── turbo.json
@@ -80,23 +80,153 @@ linear-clone/
 
 ## Phase 1: Project Initialization & Setup
 
-### Step 1.1: Initialize Turborepo
+### Step 1.1: Remove Unnecessary Template Files
 
 ```bash
-npx create-turbo@latest linear-clone
-cd linear-clone
+# Remove docs app (not needed for Linear clone)
+Remove-Item -Recurse -Force apps/docs
+
+# Remove ESLint config package (replaced by Biome.js)
+Remove-Item -Recurse -Force packages/eslint-config
+
+# Update root package.json workspaces (done automatically by npm)
 ```
 
 ### Step 1.2: Setup Biome.js
+
+Install Biome.js and create configuration:
+
+```bash
+npm install --save-dev --workspace-root @biomejs/biome
+```
 
 Create `biome.json` in the root with configuration for:
 
 - TypeScript/JavaScript linting
 - Formatting rules (2 spaces, semicolons, single quotes)
 - Import sorting
-- Ignore patterns for build directories
+- Ignore patterns for build directories (`.next`, `node_modules`, `dist`)
 
-### Step 1.3: Setup Frontend App (Next.js)
+Example configuration:
+
+```json
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always"
+    }
+  }
+}
+```
+
+Update root `package.json` scripts:
+
+```json
+{
+  "scripts": {
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
+  }
+}
+```
+
+### Step 1.3: Setup Vitest for Testing
+
+Install Vitest in root and configure for all packages:
+
+```bash
+npm install --save-dev --workspace-root vitest @vitest/ui
+```
+
+Create `vitest.config.ts` in root for shared test configuration.
+
+Add test scripts to root `package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "test:coverage": "turbo run test:coverage"
+  }
+}
+```
+
+Update `turbo.json` to include test tasks:
+
+```json
+{
+  "tasks": {
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+### Step 1.3: Setup Vitest for Testing
+
+Install Vitest in root and configure for all packages:
+
+```bash
+npm install --save-dev --workspace-root vitest @vitest/ui
+```
+
+Create `vitest.config.ts` in root for shared test configuration.
+
+Add test scripts to root `package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "test:coverage": "turbo run test:coverage"
+  }
+}
+```
+
+Update `turbo.json` to include test tasks:
+
+```json
+{
+  "tasks": {
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+### Step 1.4: Setup Frontend App (Next.js)
 
 In `apps/web`:
 
@@ -105,7 +235,16 @@ In `apps/web`:
 - Configure `tailwind.config.js` with Linear-inspired design tokens
 - Setup `next.config.js` for image optimization and environment variables
 
-### Step 1.4: Setup Backend App (Hono.js)
+### Step 1.4: Setup Frontend App (Next.js)
+
+In `apps/web`:
+
+- Install dependencies: Tailwind CSS, Radix UI, Lucide React, Zustand, React Hook Form, Zod
+- Configure `tailwind.config.js` with Linear-inspired design tokens
+- Setup `next.config.js` for image optimization and environment variables
+- Configure Vitest for frontend testing
+
+### Step 1.5: Setup Backend App (Hono.js)
 
 In `apps/api`:
 
@@ -114,7 +253,18 @@ In `apps/api`:
 - Setup development server with hot reload
 - Configure environment variables
 
-### Step 1.5: Setup Database Package
+### Step 1.5: Setup Backend App (Hono.js)
+
+Create `apps/api`:
+
+- Initialize Hono.js project with clean architecture structure
+- Install dependencies: Hono, ws (WebSockets), cors, dotenv
+- Setup development server with hot reload
+- Configure environment variables
+- Configure Vitest for backend testing
+- Setup test utilities and mocks
+
+### Step 1.6: Setup Database Package
 
 In `packages/database`:
 
@@ -122,12 +272,23 @@ In `packages/database`:
 - Setup Drizzle config file
 - Create initial database connection utility
 
-### Step 1.6: Configure Turborepo
+### Step 1.6: Setup Database Package
+
+Create `packages/database`:
+
+- Install Drizzle ORM and PostgreSQL driver (pg)
+- Setup Drizzle config file
+- Create initial database connection utility
+- Configure test database for integration tests
+
+### Step 1.7: Configure Turborepo
 
 Update `turbo.json` with:
 
 - Build pipeline for all apps/packages
 - Dev pipeline with proper dependencies
+- Test pipeline with coverage outputs
+- Lint pipeline using Biome.js
 - Cache configuration for optimal performance
 
 ## Phase 2: Database Schema Design
@@ -1011,29 +1172,56 @@ In `apps/web/src/components/`:
 
 - Configure Vitest for both frontend and backend
 - Setup test utilities and helpers
+- Install React Testing Library for component tests
+- Configure coverage thresholds
 
 ### Step 5.2: Write Backend Tests
 
 In `apps/api/src/__tests__/`:
 
-- Unit tests for services (issue creation, filtering, etc.)
-- Integration tests for API routes
-- Authentication flow tests
-- Database query tests
+- **Unit tests** for services (business logic)
+  - Issue creation with identifier generation
+  - Filtering and sorting logic
+  - Notification generation
+  - Activity logging
+- **Integration tests** for API routes (with mocked DB)
+  - Full request/response cycles
+  - Authentication flows
+  - Error handling
+- **Database tests** (migrations, queries)
+  - Schema validation
+  - Constraint testing
+  - Migration rollback
 
 ### Step 5.3: Write Frontend Tests
 
 In `apps/web/src/__tests__/`:
 
-- Component unit tests (UI components)
-- Integration tests (issue creation flow, etc.)
-- Hook tests (state management)
-- Utility function tests
+- **Component unit tests** (React Testing Library)
+  - UI component rendering
+  - User interactions
+  - Accessibility
+- **Integration tests** (user flows)
+  - Issue creation flow
+  - Kanban board interactions
+  - Command palette usage
+- **Store tests** (Zustand state management)
+  - State updates
+  - Action handlers
+  - WebSocket sync
+- **Hook tests** (custom hooks)
+  - Keyboard shortcuts
+  - API data fetching
+  - Form validation
 
 ### Step 5.4: E2E Testing (Optional)
 
-- Consider Playwright for critical user flows
-- Test: login, create issue, update status, add comment
+- Use Playwright for critical user flows
+- Test scenarios:
+  - Complete authentication flow
+  - Create and update issue
+  - Real-time collaboration
+  - Command palette workflows
 
 ## Phase 6: Performance Optimization
 
@@ -1160,6 +1348,62 @@ Create `API.md`:
 8. ⚠️ Mobile responsive design
 9. ⚠️ Offline support
 10. ⚠️ Integration webhooks (mocked)
+
+## Clean Architecture Implementation
+
+### Backend Structure (`apps/api/src/`)
+
+**Separation of Concerns**:
+
+- **Routes** (`routes/`): Thin handlers, validation only (Zod schemas)
+- **Services** (`services/`): Business logic, no HTTP concerns
+- **Middleware** (`middleware/`): Auth, CORS, error handling, validation
+- **Database** (`packages/database/`): Drizzle ORM, migrations, schemas
+
+**Key Principles**:
+
+1. **Routes should NOT contain business logic** - Only handle HTTP concerns
+2. **Services contain all business logic** - No knowledge of HTTP/Express/Hono
+3. **Database layer is isolated** - Services use database through abstraction
+4. **Dependency injection** - Services receive dependencies (DB, config) as parameters
+
+**Example Pattern**:
+
+```typescript
+// routes/issues.ts - Thin handler
+app.post("/api/teams/:teamId/issues", async (c) => {
+  const body = await c.req.json();
+  const validated = issueSchema.parse(body);
+  const issue = await issueService.createIssue(validated);
+  return c.json(issue, 201);
+});
+
+// services/issueService.ts - Business logic
+export async function createIssue(data: CreateIssueInput) {
+  const identifier = await generateIdentifier(data.teamId);
+  const issue = await db.insert(issues).values({ ...data, identifier });
+  await activityService.logActivity("issue", "created", issue.id);
+  await notificationService.notifyAssignment(issue);
+  return issue;
+}
+```
+
+### Frontend Structure (`apps/web/src/`)
+
+**Layer Organization**:
+
+- **App** (`app/`): Next.js App Router pages and layouts
+- **Components** (`components/`): Reusable UI components
+- **Stores** (`stores/`): Zustand state management
+- **Lib** (`lib/`): Utilities, API clients, WebSocket handlers
+- **Hooks** (`hooks/`): Custom React hooks
+
+**Key Principles**:
+
+1. **Server Components by default** - Use `"use client"` sparingly
+2. **Co-locate related code** - Keep components with their styles/tests
+3. **API layer abstraction** - All API calls through `lib/api/` functions
+4. **State management** - Global state in Zustand, local state in hooks
 
 ## Code Quality Guidelines
 
