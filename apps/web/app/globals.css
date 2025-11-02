@@ -4,24 +4,24 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 0 0% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 0 0% 9%;
     --primary: 263 70% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 95%;
-    --secondary-foreground: 0 0% 10%;
-    --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 0 0% 95%;
-    --accent-foreground: 0 0% 10%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 88%;
-    --input: 0 0% 88%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
     --ring: 263 70% 50%;
     --radius: 0.5rem;
   }
@@ -186,16 +186,16 @@ body::-webkit-scrollbar {
   --font-size-title2: 1.5rem;
   --font-size-title3: 1.25rem;
 
-  --header-bg: hsla(0, 0%, 10%, 0.9);
-  --header-border: hsla(0, 0%, 100%, 0.1);
-  --color-bg-primary: #171717;
-  --color-bg-secondary: #1f1f1f;
-  --color-bg-tertiary: #262626;
-  --color-border-primary: #333333;
-  --color-border-secondary: #404040;
-  --color-text-primary: #fafafa;
-  --color-text-secondary: #e5e5e5;
-  --color-text-tertiary: #a3a3a3;
+  --header-bg: hsla(0, 0%, 100%, 0.8);
+  --header-border: hsla(0, 0%, 0%, 0.1);
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8f8f8;
+  --color-bg-tertiary: #f0f0f0;
+  --color-border-primary: #e5e5e5;
+  --color-border-secondary: #d4d4d4;
+  --color-text-primary: #171717;
+  --color-text-secondary: #404040;
+  --color-text-tertiary: #737373;
 }
 
 @media (max-width: 768px) {
