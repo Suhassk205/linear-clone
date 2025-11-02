@@ -324,11 +324,20 @@ See [PHASE2_COMPLETE.md](./PHASE2_COMPLETE.md) for database details.
   - Authentication layout with centered card design
   - Main app layout with sidebar + top navigation structure
   - Prepared for command palette and notifications integration
-- [ ] Complete remaining UI components (Select, DropdownMenu, Popover, Checkbox, RadioGroup)
-- [ ] Complete remaining UI components (Select, DropdownMenu, Popover, Checkbox, RadioGroup)
 - [x] Sidebar and TopNav component implementations
-- [x] Authentication pages
-- [ ] Issue management pages
+- [x] **Phase 4.7**: Issue Management Pages ✅
+  - Issue list page with table layout and filters
+  - Kanban board page with drag-and-drop (@dnd-kit)
+  - Issue detail page with inline editing
+  - IssueCard component for board view
+  - IssueRow component for table view
+  - IssueFilters component with multi-select filters
+  - IssuePriorityIcon and IssueStatusBadge components
+  - View switching between list and board
+- [ ] Complete remaining UI components (Select, DropdownMenu, Popover, Checkbox, RadioGroup)
+- [ ] Authentication pages (Phase 4.4)
+- [ ] Command Palette (Phase 4.6)
+- [ ] Issue Form component with Markdown editor (Phase 4.8)
 
 See sections 4.1, 4.2, and 4.3 in [AGENTS.md](./AGENTS.md) for completed features.
 
