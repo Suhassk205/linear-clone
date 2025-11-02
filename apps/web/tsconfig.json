@@ -22,7 +22,9 @@
       "@/components/*": ["./components/*"],
       "@/lib/*": ["./lib/*"],
       "@/app/*": ["./app/*"],
-      "@/assets/*": ["./assets/*"]
+      "@/assets/*": ["./assets/*"],
+      "@/stores/*": ["./stores/*"],
+      "@/hooks/*": ["./hooks/*"]
     },
     "target": "ES2017"
   },

@@ -57,13 +57,13 @@ const Header: FC = () => {
               </li>
 
               <li className={cn(styles.header__item, styles.header__button, styles.header__login)}>
-                <Link className={cn(styles.header__link, styles.button__login)} href="#">
+                <Link className={cn(styles.header__link, styles.button__login)} href="/login">
                   Log in
                 </Link>
               </li>
 
               <li className={cn(styles.header__item, styles.header__button, styles.header__signup)}>
-                <Link className={cn(styles.header__link, styles.button__signup)} href="#">
+                <Link className={cn(styles.header__link, styles.button__signup)} href="/register">
                   Sign up
                 </Link>
               </li>

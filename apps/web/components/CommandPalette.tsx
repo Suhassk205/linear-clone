@@ -1,0 +1,282 @@
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from '@/components/ui/command';
+import {
+  FileText,
+  FolderKanban,
+  Repeat,
+  User,
+  Plus,
+  Settings,
+  Inbox,
+  ListTodo,
+  Search,
+} from 'lucide-react';
+import { useUIStore } from '@/stores/uiStore';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useTeamStore } from '@/stores/teamStore';
+
+interface CommandAction {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  onSelect: () => void;
+  category: 'actions' | 'navigation' | 'search';
+  shortcut?: string;
+}
+
+export function CommandPalette() {
+  const router = useRouter();
+  const { commandPaletteOpen, closeCommandPalette, openModal } = useUIStore();
+  const { activeTeamId } = useTeamStore();
+  const [search, setSearch] = useState('');
+
+  // Quick actions
+  const actions: CommandAction[] = [
+    {
+      id: 'create-issue',
+      label: 'Create new issue',
+      icon: <Plus className="h-4 w-4" />,
+      onSelect: () => {
+        closeCommandPalette();
+        openModal('create-issue');
+      },
+      category: 'actions',
+      shortcut: 'C',
+    },
+    {
+      id: 'create-project',
+      label: 'Create new project',
+      icon: <Plus className="h-4 w-4" />,
+      onSelect: () => {
+        closeCommandPalette();
+        openModal('create-project');
+      },
+      category: 'actions',
+    },
+    {
+      id: 'create-cycle',
+      label: 'Create new cycle',
+      icon: <Plus className="h-4 w-4" />,
+      onSelect: () => {
+        closeCommandPalette();
+        openModal('create-cycle');
+      },
+      category: 'actions',
+    },
+  ];
+
+  // Navigation items
+  const navigationActions: CommandAction[] = [
+    {
+      id: 'nav-my-issues',
+      label: 'Go to My Issues',
+      icon: <ListTodo className="h-4 w-4" />,
+      onSelect: () => {
+        closeCommandPalette();
+        router.push('/issues/me');
+      },
+      category: 'navigation',
+      shortcut: 'G → I',
+    },
+    {
+      id: 'nav-inbox',
+      label: 'Go to Inbox',
+      icon: <Inbox className="h-4 w-4" />,
+      onSelect: () => {
+        closeCommandPalette();
+        router.push('/inbox');
+      },
+      category: 'navigation',
+    },
+    {
+      id: 'nav-settings',
+      label: 'Go to Settings',
+      icon: <Settings className="h-4 w-4" />,
+      onSelect: () => {
+        closeCommandPalette();
+        router.push('/settings');
+      },
+      category: 'navigation',
+    },
+  ];
+
+  // Add team-specific navigation if team is active
+  if (activeTeamId) {
+    navigationActions.push(
+      {
+        id: 'nav-team-issues',
+        label: 'Go to Team Issues',
+        icon: <FileText className="h-4 w-4" />,
+        onSelect: () => {
+          closeCommandPalette();
+          router.push(`/team/${activeTeamId}/issues`);
+        },
+        category: 'navigation',
+      },
+      {
+        id: 'nav-projects',
+        label: 'Go to Projects',
+        icon: <FolderKanban className="h-4 w-4" />,
+        onSelect: () => {
+          closeCommandPalette();
+          router.push(`/team/${activeTeamId}/projects`);
+        },
+        category: 'navigation',
+        shortcut: 'G → P',
+      },
+      {
+        id: 'nav-cycles',
+        label: 'Go to Cycles',
+        icon: <Repeat className="h-4 w-4" />,
+        onSelect: () => {
+          closeCommandPalette();
+          router.push(`/team/${activeTeamId}/cycles`);
+        },
+        category: 'navigation',
+        shortcut: 'G → C',
+      }
+    );
+  }
+
+  // Search actions
+  const searchActions: CommandAction[] = [
+    {
+      id: 'search-issues',
+      label: 'Search issues...',
+      icon: <Search className="h-4 w-4" />,
+      onSelect: () => {
+        // Keep command palette open and focus on search
+        // In real implementation, this would switch to issue search mode
+        console.log('Searching issues:', search);
+      },
+      category: 'search',
+    },
+    {
+      id: 'search-projects',
+      label: 'Search projects...',
+      icon: <Search className="h-4 w-4" />,
+      onSelect: () => {
+        console.log('Searching projects:', search);
+      },
+      category: 'search',
+    },
+  ];
+
+  // Filter actions based on search
+  const filterActions = (items: CommandAction[]) => {
+    if (!search) return items;
+    return items.filter((item) =>
+      item.label.toLowerCase().includes(search.toLowerCase())
+    );
+  };
+
+  const filteredActions = filterActions(actions);
+  const filteredNavigation = filterActions(navigationActions);
+  const filteredSearch = filterActions(searchActions);
+
+  // Handle command palette close
+  const handleClose = useCallback(() => {
+    closeCommandPalette();
+    setSearch('');
+  }, [closeCommandPalette]);
+
+  return (
+    <CommandDialog open={commandPaletteOpen} onOpenChange={handleClose}>
+      <CommandInput
+        placeholder="Type a command or search..."
+        value={search}
+        onValueChange={setSearch}
+      />
+      <CommandList>
+        <CommandEmpty>No results found.</CommandEmpty>
+
+        {/* Quick Actions */}
+        {filteredActions.length > 0 && (
+          <>
+            <CommandGroup heading="Actions">
+              {filteredActions.map((action) => (
+                <CommandItem
+                  key={action.id}
+                  onSelect={action.onSelect}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    {action.icon}
+                    <span>{action.label}</span>
+                  </div>
+                  {action.shortcut && (
+                    <span className="text-xs text-muted-foreground">
+                      {action.shortcut}
+                    </span>
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+          </>
+        )}
+
+        {/* Navigation */}
+        {filteredNavigation.length > 0 && (
+          <>
+            <CommandGroup heading="Navigation">
+              {filteredNavigation.map((action) => (
+                <CommandItem
+                  key={action.id}
+                  onSelect={action.onSelect}
+                  className="flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    {action.icon}
+                    <span>{action.label}</span>
+                  </div>
+                  {action.shortcut && (
+                    <span className="text-xs text-muted-foreground">
+                      {action.shortcut}
+                    </span>
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandSeparator />
+          </>
+        )}
+
+        {/* Search */}
+        {search && filteredSearch.length > 0 && (
+          <CommandGroup heading="Search">
+            {filteredSearch.map((action) => (
+              <CommandItem key={action.id} onSelect={action.onSelect}>
+                <div className="flex items-center gap-2">
+                  {action.icon}
+                  <span>{action.label}</span>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
+        {/* TODO: Add recent searches, issues, projects from API */}
+        {!search && (
+          <CommandGroup heading="Recent">
+            <CommandItem disabled>
+              <span className="text-muted-foreground">No recent items</span>
+            </CommandItem>
+          </CommandGroup>
+        )}
+      </CommandList>
+    </CommandDialog>
+  );
+}

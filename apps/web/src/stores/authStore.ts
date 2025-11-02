@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { authAdapter } from '../lib/auth-client';
 
 // SECURITY NOTE: JWT Token Storage
 // Current implementation stores tokens in localStorage for development convenience.
@@ -38,6 +39,11 @@ interface AuthActions {
   login: (user: User, token: string) => void;
   logout: () => void;
   setLoading: (isLoading: boolean) => void;
+  // Better Auth integration methods
+  initializeSession: () => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string, name: string) => Promise<void>;
+  logoutUser: () => Promise<void>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -74,6 +80,90 @@ export const useAuthStore = create<AuthStore>()(
           }),
 
         setLoading: (isLoading) => set({ isLoading }),
+
+        // Better Auth integration methods
+        initializeSession: async () => {
+          set({ isLoading: true });
+          try {
+            const user = await authAdapter.getCurrentUser();
+            if (user) {
+              set({
+                user,
+                isAuthenticated: true,
+                isLoading: false,
+              });
+            } else {
+              set({ isLoading: false });
+            }
+          } catch (error) {
+            console.error('Failed to initialize session:', error);
+            set({ isLoading: false });
+          }
+        },
+
+        loginWithEmail: async (email: string, password: string) => {
+          set({ isLoading: true });
+          try {
+            const response = await authAdapter.login({ email, password });
+            const { user, token } = response.data;
+
+            // Store token in localStorage
+            localStorage.setItem('authToken', token);
+
+            set({
+              user,
+              token,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          } catch (error) {
+            set({ isLoading: false });
+            throw error;
+          }
+        },
+
+        registerWithEmail: async (email: string, password: string, name: string) => {
+          set({ isLoading: true });
+          try {
+            const response = await authAdapter.register({ email, password, name });
+            const { user, token } = response.data;
+
+            // Store token in localStorage
+            localStorage.setItem('authToken', token);
+
+            set({
+              user,
+              token,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          } catch (error) {
+            set({ isLoading: false });
+            throw error;
+          }
+        },
+
+        logoutUser: async () => {
+          set({ isLoading: true });
+          try {
+            await authAdapter.logout();
+            set({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
+          } catch (error) {
+            console.error('Logout error:', error);
+            // Force logout even if API call fails
+            set({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
+          }
+        },
       }),
       {
         name: 'auth-storage',
